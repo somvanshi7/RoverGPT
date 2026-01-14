@@ -14,15 +14,29 @@ Question:
 {question}
 """
 
-    response = requests.post(
-        OLLAMA_URL,
-        json={
-            "model": "llama3",
-            "prompt": prompt,
-            "stream": False
-        },
-        timeout=120
-    )
+    try:
+        response = requests.post(
+            OLLAMA_URL,
+            json={
+                "model": "llama3",
+                "prompt": prompt,
+                "stream": False
+            },
+            timeout=120
+        )
 
-    data = response.json()
-    return data["response"].strip()
+        data = response.json()
+
+        # Ollama success case
+        if "response" in data:
+            return data["response"].strip()
+
+        # Ollama error case
+        if "error" in data:
+            return f"Ollama error: {data['error']}"
+
+        # Unknown case
+        return "LLM returned an unexpected response format."
+
+    except Exception as e:
+        return f"LLM failed: {str(e)}"
